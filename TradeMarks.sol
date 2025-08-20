@@ -26,16 +26,27 @@ contract IntellectualProperty{
     uint[] public registeredTradeMarks;
     owner[] public tdownerHistory;
     owner[] public tracktdowner;
-
-      TradeMark public tradeMark;
+    address public thirdPartyVerifier;
 
     mapping (uint=> TradeMark) public tradeMarks;
    
-
     uint public tdSerial = 300001;
 
     event log(string message, uint number);
 
+    modifier onlyOwner(uint _tdserial) {
+      require(msg.sender == tradeMarks[_tdserial].owner, "only IP owner can perform this action");
+        _;      
+    }    
+    
+    modifier onlythridPartyVerifier() {
+      require(msg.sender == thirdPartyVerifier, "only third party verifier can perform this action");
+        _;      
+    }   
+
+    constructor(address  _thirdPartyVerifier) {
+      thirdPartyVerifier = _thirdPartyVerifier;
+    }
     /*
     register new IP with 
     type(patent,copyright,trademark)
@@ -81,16 +92,24 @@ contract IntellectualProperty{
         tradeMarks[_tdserial].ipType);
         
         return newTradeMark;
-   }
+    }
     
-
+    function verifyIP(uint _tdserial) public onlythridPartyVerifier returns (bool) {
+      require(tradeMarks[_tdserial].serialNumber != 0, "TradeMark not found");
+      if(tradeMarks[tdSerial].status == TradeMarkStatus.New){
+          tradeMarks[tdSerial].status = TradeMarkStatus.Live_Registered;
+          return true;
+      } else{
+          return false;
+      }
+    }
 
     /*
     Manage and update ownership rights
     transfer ownership securely 
     */
 
-    function transferIp(address _to, uint _tdserial) public {
+    function transferIp(address _to, uint _tdserial) public onlyOwner(_tdserial) {
      require(tradeMarks[_tdserial].serialNumber != 0, "TradeMark not found");
      owner memory newowner = owner(tradeMarks[_tdserial].serialNumber,tradeMarks[_tdserial].owner,_to,block.timestamp);
      tdownerHistory.push(newowner);
