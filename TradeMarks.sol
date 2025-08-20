@@ -13,7 +13,7 @@ contract IntellectualProperty{
       IPType ipType;    
     }
 
-    struct owners{
+    struct owner{
           uint IPNumber;
           address from;
           address to;
@@ -24,13 +24,13 @@ contract IntellectualProperty{
     enum IPType{TradeMark, Patent, CopyRight}
 
     uint[] public registeredTradeMarks;
-    owners[] public tdownerHistory;
-    owners[] public tracktdowner;
+    owner[] public tdownerHistory;
+    owner[] public tracktdowner;
 
       TradeMark public tradeMark;
 
     mapping (uint=> TradeMark) public tradeMarks;
-    mapping(uint=> owners) public tmOwnersHistory;
+   
 
     uint public tdSerial = 300001;
 
@@ -71,21 +71,19 @@ contract IntellectualProperty{
 
     function viewIP(uint _tdserial) public view returns (TradeMark memory) {
     
-    for (uint i = 0; i < registeredTradeMarks.length; i++) {
-        if (registeredTradeMarks[i] == _tdserial) {
-             TradeMark memory newTradeMark = TradeMark(      
-    tradeMarks[_tdserial].wordMark,
-    tradeMarks[_tdserial].status,
-    tradeMarks[_tdserial].goodsAndServices,
-    tradeMarks[_tdserial].serialNumber,
-    tradeMarks[_tdserial].owner,
-    tradeMarks[_tdserial].ipType);
+        require(tradeMarks[_tdserial].serialNumber != 0, "TradeMark not found");
+        TradeMark memory newTradeMark = TradeMark(      
+        tradeMarks[_tdserial].wordMark,
+        tradeMarks[_tdserial].status,
+        tradeMarks[_tdserial].goodsAndServices,
+        tradeMarks[_tdserial].serialNumber,
+        tradeMarks[_tdserial].owner,
+        tradeMarks[_tdserial].ipType);
+        
+        return newTradeMark;
+   }
     
-    return newTradeMark;
-        }
-    }   
-    revert("TradeMark not found");
-}
+
 
     /*
     Manage and update ownership rights
@@ -93,10 +91,19 @@ contract IntellectualProperty{
     */
 
     function transferIp(address _to, uint _tdserial) public {
-     tmOwnersHistory[tdSerial].IPNumber = _tdserial;
-     tmOwnersHistory[tdSerial].from = msg.sender;
-     tmOwnersHistory[tdSerial].to = _to;
-     tmOwnersHistory[tdSerial].timestamp = block.timestamp;
+     require(tradeMarks[_tdserial].serialNumber != 0, "TradeMark not found");
+     owner memory newowner = owner(tradeMarks[_tdserial].serialNumber,tradeMarks[_tdserial].owner,_to,block.timestamp);
+     tdownerHistory.push(newowner);
+     tradeMarks[_tdserial].owner = _to;
+     emit log("Ownership Transferred",_tdserial);
     }
    
+   function trackIPOwnerHistory(uint _tdserial) public returns (owner[] memory) {
+    for(uint i=0; i<tdownerHistory.length; i++) {
+       if(tdownerHistory[i].IPNumber == _tdserial) {
+        tracktdowner.push(tdownerHistory[i]);
+       }
+    }
+    return tracktdowner;
+   } 
 }
