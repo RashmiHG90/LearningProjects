@@ -9,8 +9,8 @@ interface IVehicle{
 }
 
 //Abstract contract: can have both implemented and unimplemented functions
-abstract contract AbstractVehical{
-    abstract contract AbstractVehicle{
+abstract contract AbstractVehicle{
+    
         string public brand = "Generic vehicle";
         function horn() public pure returns(string memory){
             return "Beep! Beep!";
@@ -18,7 +18,6 @@ abstract contract AbstractVehical{
 
         //Abstract function (no body)
         function fuelType() public view virtual returns(string memory);
-    }
 }
 
 ///Concrete contract: Implements both interface and abstract contract
